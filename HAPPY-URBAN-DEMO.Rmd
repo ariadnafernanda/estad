@@ -1,0 +1,44 @@
+```{r}
+library(htmltab)
+library(stringr)
+happylink="https://en.wikipedia.org/wiki/World_Happiness_Report"
+happypath='//*[@id="mw-content-text"]/div/table/tbody'
+happy=htmltab(doc=happylink, which = happypath) 
+happy[,]=lapply(happy[,], trimws,whitespace = "[\\h\\v]")
+names(happy)[names(happy)=="Country or region"]="Country"
+names(happy)[names(happy)=="Score"]="ScoreHappiness"
+happy$`Overall rank`=NULL
+happy[2:8]=lapply(happy[2:8],as.numeric)
+happy=na.omit(happy)
+str(happy)
+```
+
+
+```{r}
+library(htmltab)
+demoL="https://en.wikipedia.org/wiki/Democracy_Index"
+demoPath='//*[@id="mw-content-text"]/div/table[2]/tbody'
+demo = htmltab(doc = demoL,which  = demoPath,encoding = "UTF-8")
+demo[,]=lapply(demo[,], trimws,whitespace = "[\\h\\v]") 
+names(demo)=str_split(names(demo)," ",simplify = T)[,1]
+names(demo)[names(demo)=="Score"]="ScoreDemo"
+demo[,c(1,9,10)]=NULL
+demo[,c(2:7)]=lapply(demo[,c(2:7)],as.numeric)
+demo=na.omit(demo) 
+str(demo)
+```
+
+
+```{r}
+urblink="https://www.cia.gov/library/publications/resources/the-world-factbook/fields/349.html"
+urbpath='//*[@id="fieldListing"]'
+urban=htmltab(doc=urblink,which=urbpath)
+patron="(\\-*\\d+\\.*\\d*)(?=\\%)"
+colsucia=urban$Urbanization
+urban$urb_pop=str_extract_all(string = colsucia,pattern = patron,simplify = T)[,1]
+urban$urb_rate=str_extract_all(string=colsucia,pattern=patron,simplify=T)[,2]
+urban$Urbanization=NULL
+urban[2:3]=lapply(urban[2:3],as.numeric)
+str(urban)
+```
+

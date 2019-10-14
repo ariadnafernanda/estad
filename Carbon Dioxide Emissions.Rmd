@@ -1,0 +1,54 @@
+```{r}
+library(htmltab)
+linkweb="https://www.cia.gov/library/publications/resources/the-world-factbook/fields/274.html"
+xpathcia='//*[@id="fieldListing"]'
+carbonCIA=htmltab(doc = linkweb, which = xpathcia, encoding = "UTF-8")
+```
+
+```{r}
+#Cambiamos de nombre
+names(carbonCIA) = c("Country", "co2")
+```
+
+```{r}
+#Separamos la columna
+library(tidyr)
+carbonCIA=separate(carbonCIA,co2,into=c("co2",'delete1'), "\\(")
+carbonCIA=separate(carbonCIA,co2,into=c("co2",'xtra1','xtra2'), " ")
+```
+
+```{r}
+#Recodificamos lo de billiom y million
+library(dplyr)
+carbonCIA$xtra1=recode(carbonCIA$xtra1,billion=10^9,million=10^6,Mt=1) #Esta columna automaticamente se convierte en numerico
+```
+
+```{r}
+#Eliminamos caracteres especiales en "co2", es decir, las comas (",")
+carbonCIA$co2 =gsub(",", "", carbonCIA$co2) 
+```
+
+```{r}
+#Primero convertimos a numerico
+carbonCIA$co2=as.numeric(carbonCIA$co2) 
+
+#Estandarizo todo a millones, multiplico las columnas y luego divido
+carbonCIA$co2=(carbonCIA$co2*carbonCIA$xtra1)/(10^6)
+```
+
+```{r}
+carbonCIA$xtra1=NULL
+carbonCIA$xtra2=NULL
+carbonCIA$delete1=NULL
+```
+
+```{r}
+row.names(carbonCIA)=NULL
+carbonCIA$Country=trimws(carbonCIA$Country,whitespace ="[\\h\\v]") #NO espacios en blanco en Country
+```
+
+```{r}
+str(carbonCIA)
+summary(carbonCIA)
+```
+
